@@ -5,7 +5,7 @@ setup(
     version='0.1.0',    
     description='A library to manage Siglent instruments, via the VISA interface',
     readme = "README.md",
-    url='https://github.com/shuds13/pyexample',      ##
+    url= 'https://github.com/GramazioFrancesco/siglent-visa',
     author='Gramazio Francesco',
     author_email='gramazio.francesco@lab3841.it',
     license='MIT',
