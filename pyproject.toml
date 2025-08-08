@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "siglent-visa"
+version = "0.2.0"
+description = "Python library for controlling Siglent instruments via VISA interface"
+authors = [
+    { name = "Francesco Gramazio", email = "gramazio.francesco@lab3841.it" },
+    { name = "Thomas Blum", email = "tfblum@icloud.com" }
+]
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["siglent", "visa", "pyvisa", "instrumentation", "test-equipment"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+]
+dependencies = [
+    "pyvisa>=1.14.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "pytest-cov>=4.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/tfblum/siglent-visa"
+Repository = "https://github.com/tfblum/siglent-visa"
+"Bug Reports" = "https://github.com/tfblum/siglent-visa/issues"
+"Original Repository" = "https://github.com/GramazioFrancesco/siglent-visa"
+
+[tool.setuptools.packages.find]
+include = ["sdg1000*", "sdg2000x*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.md"]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose"
+]
+markers = [
+    "slow: marks tests as slow",
+    "hardware: marks tests that require hardware connection"
+]
