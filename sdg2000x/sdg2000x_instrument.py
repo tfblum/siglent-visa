@@ -1,13 +1,14 @@
 '''
 Class to manage SDG2000X instrument
 
-@version: v0.1.0
+@version: v0.2.0
 
-@author: Francesco Gramazio
+@author: Francesco Gramazio, Thomas Blum (tfblum)
 @contact: francesco.gramazio@lab3841.it
 '''
 
-from sdg2000x.visa_instruments import VisaInstruments
+from typing import Union, Optional
+from visa_instruments import VisaInstruments
 
 class SDG2000X(VisaInstruments):   
     '''
@@ -363,7 +364,7 @@ class SDG2000X(VisaInstruments):
         write = f'{channel}:OUTP {state}'
         self.instr.write(write)
 
-    def set_output_load(self, channel: str, load: str | int):
+    def set_output_load(self, channel: str, load: Union[str, int]):
         '''
         Can set load output of set channel
 
@@ -399,4 +400,222 @@ class SDG2000X(VisaInstruments):
         index: index of arbitrary wave
         '''
         write = f'{channel}:ARWV INDEX, {index}'
-        self.instr.write(write)       
+        self.instr.write(write)
+    
+    # Advanced modulation methods
+    def set_modulation(self, channel: str, state: str, mod_type: Optional[str] = None, 
+                      frequency: Optional[float] = None, depth: Optional[float] = None):
+        '''
+        Set modulation parameters
+        
+        Args:
+            channel: the set channel (C1, C2)
+            state: modulation state (ON, OFF)
+            mod_type: modulation type (AM, FM, PM, etc.)
+            frequency: modulation frequency
+            depth: modulation depth
+        '''
+        # Enable/disable modulation
+        write = f'{channel}:MDWV STATE,{state}'
+        self.instr.write(write)
+        
+        if state.upper() == 'ON' and mod_type:
+            # Set modulation type and parameters
+            if mod_type:
+                write = f'{channel}:MDWV {mod_type}'
+                if frequency:
+                    write += f',FRQ,{frequency}'
+                if depth:
+                    if mod_type == 'AM':
+                        write += f',DEPTH,{depth}'
+                    elif mod_type == 'FM':
+                        write += f',DEVI,{depth}'
+                self.instr.write(write)
+    
+    def get_modulation_settings(self, channel: str):
+        '''
+        Get modulation settings for a channel
+        
+        Args:
+            channel: the set channel (C1, C2)
+        '''
+        query = f'{channel}:MDWV?'
+        response = self.instr.query(query)
+        fields = response.strip().split(',')
+        
+        # Parse modulation settings
+        instrument_dict = {}
+        for i in range(0, len(fields), 2):
+            if i + 1 < len(fields):
+                key = fields[i].strip()
+                value = fields[i + 1].strip()
+                instrument_dict[key.lower()] = value
+        
+        return instrument_dict
+    
+    # Burst mode methods
+    def set_burst(self, channel: str, state: str, n_cycle: Optional[int] = None, 
+                  period: Optional[float] = None, trigger_source: Optional[str] = None):
+        '''
+        Set burst parameters
+        
+        Args:
+            channel: the set channel (C1, C2)
+            state: burst state (ON, OFF)
+            n_cycle: number of cycles
+            period: burst period
+            trigger_source: trigger source (MAN, CH1, CH2, EXT)
+        '''
+        # Enable/disable burst
+        write = f'{channel}:BTWV STATE,{state}'
+        self.instr.write(write)
+        
+        if state.upper() == 'ON':
+            # Set burst parameters
+            if n_cycle:
+                write = f'{channel}:BTWV GATE_NCYC,{n_cycle}'
+                self.instr.write(write)
+            if period:
+                write = f'{channel}:BTWV PRD,{period}'
+                self.instr.write(write)
+            if trigger_source:
+                write = f'{channel}:BTWV TRSR,{trigger_source}'
+                self.instr.write(write)
+    
+    def get_burst_settings(self, channel: str):
+        '''
+        Get burst settings for a channel
+        
+        Args:
+            channel: the set channel (C1, C2)
+        '''
+        query = f'{channel}:BTWV?'
+        response = self.instr.query(query)
+        fields = response.strip().split(',')
+        
+        # Parse burst settings
+        instrument_dict = {}
+        for i in range(0, len(fields), 2):
+            if i + 1 < len(fields):
+                key = fields[i].strip()
+                value = fields[i + 1].strip()
+                instrument_dict[key.lower()] = value
+        
+        return instrument_dict
+    
+    # Sweep methods
+    def set_sweep(self, channel: str, state: str, start_freq: Optional[float] = None,
+                  stop_freq: Optional[float] = None, sweep_time: Optional[float] = None, 
+                  sweep_type: Optional[str] = None):
+        '''
+        Set frequency sweep parameters
+        
+        Args:
+            channel: the set channel (C1, C2)
+            state: sweep state (ON, OFF)
+            start_freq: start frequency
+            stop_freq: stop frequency
+            sweep_time: sweep time
+            sweep_type: sweep type (LIN, LOG)
+        '''
+        # Enable/disable sweep
+        write = f'{channel}:SWWV STATE,{state}'
+        self.instr.write(write)
+        
+        if state.upper() == 'ON':
+            # Set sweep parameters
+            if start_freq:
+                write = f'{channel}:SWWV STFR,{start_freq}'
+                self.instr.write(write)
+            if stop_freq:
+                write = f'{channel}:SWWV SPFR,{stop_freq}'
+                self.instr.write(write)
+            if sweep_time:
+                write = f'{channel}:SWWV TIME,{sweep_time}'
+                self.instr.write(write)
+            if sweep_type:
+                write = f'{channel}:SWWV SWTP,{sweep_type}'
+                self.instr.write(write)
+    
+    def get_sweep_settings(self, channel: str):
+        '''
+        Get sweep settings for a channel
+        
+        Args:
+            channel: the set channel (C1, C2)
+        '''
+        query = f'{channel}:SWWV?'
+        response = self.instr.query(query)
+        fields = response.strip().split(',')
+        
+        # Parse sweep settings
+        instrument_dict = {}
+        for i in range(0, len(fields), 2):
+            if i + 1 < len(fields):
+                key = fields[i].strip()
+                value = fields[i + 1].strip()
+                instrument_dict[key.lower()] = value
+        
+        return instrument_dict
+    
+    # Arbitrary waveform methods
+    def upload_arbitrary_waveform(self, channel: str, name: str, data: list, 
+                                  sample_rate: Optional[float] = None):
+        '''
+        Upload arbitrary waveform data
+        
+        Args:
+            channel: the set channel (C1, C2)
+            name: waveform name
+            data: waveform data points (list of values)
+            sample_rate: sample rate
+        '''
+        # Convert data to comma-separated string
+        data_str = ','.join([str(point) for point in data])
+        
+        # Upload waveform data
+        write = f'{channel}:WVDT WVNM,{name},{data_str}'
+        self.instr.write(write)
+        
+        if sample_rate:
+            write = f'{channel}:WVDT WVNM,{name},SMPL_RATE,{sample_rate}'
+            self.instr.write(write)
+    
+    def select_arbitrary_waveform(self, channel: str, name: str):
+        '''
+        Select an arbitrary waveform by name
+        
+        Args:
+            channel: the set channel (C1, C2)
+            name: waveform name
+        '''
+        write = f'{channel}:ARWV NAME,{name}'
+        self.instr.write(write)
+    
+    def delete_arbitrary_waveform(self, name: str):
+        '''
+        Delete an arbitrary waveform
+        
+        Args:
+            name: waveform name to delete
+        '''
+        write = f'WVDT DL,{name}'
+        self.instr.write(write)
+    
+    def list_arbitrary_waveforms(self):
+        '''
+        List all stored arbitrary waveforms
+        
+        Returns:
+            List of waveform names
+        '''
+        response = self.instr.query('STL?')
+        # Parse the response to extract waveform names
+        waveforms = []
+        if response:
+            # STL response format: "STL M1,SINE,M2,USER,..."
+            parts = response.replace('STL', '').strip().split(',')
+            for i in range(1, len(parts), 2):  # Skip indices, get names
+                if i < len(parts):
+                    waveforms.append(parts[i].strip())
+        return waveforms

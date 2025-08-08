@@ -1,11 +1,11 @@
 '''
 Class to manage visa instruments
 
-@version: v0.1.0
+@version: v0.2.0
 
 @requires: pip install pyvisa
 
-@author: Francesco Gramazio
+@author: Francesco Gramazio, Thomas Blum (tfblum)
 @contact: francesco.gramazio@lab3841.it
 '''
 
